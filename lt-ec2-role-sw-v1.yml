@@ -1,0 +1,176 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Stack to create ec2 instance
+Parameters:
+
+  instanceTypeParameter:
+    Description: Select Instance Type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.nano
+      - t2.micro
+      - t2.small
+      
+  environment:
+    Description: Select Instance Type
+    Type: String
+    Default: Dev
+    AllowedValues:
+      - Dev
+      - Cst
+      - Prod
+  
+  imageID:
+    Description: Select ImageID
+    Type: String
+    Default: ami-0e07dcaca348a0e68
+      
+  vpcId:
+    Description: Select VPC
+    Type: String
+    Default: vpc-02572d72766d65ded
+
+  subnetID:
+    Description: Select Subents
+    Type: String
+    Default: subnet-01e051b40be43042f
+    AllowedValues:
+      - subnet-01e051b40be43042f
+      - Cst
+      - Prod
+  
+  instanceTypeParameter:
+    Description: Select Instance Type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.nano
+      - t2.micro
+      - t2.small
+
+
+Resources:
+
+# # Role For Launch Template
+
+  IAMSSMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Description: IAM role used for our launch demo session
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+        - arn:aws:iam::aws:policy/AWSCloud9SSMInstanceProfile
+      Tags:
+        - Key: environment 
+          Value:  !Ref environment
+
+# InstanceProfile For Launch Template
+
+  IAMinstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref IAMSSMRole  
+
+# Default Security Group
+
+  DefaultSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Statefull firewall by default allow all outbound traffic no inbout traffic
+      VpcId: !Ref vpcId
+      Tags:
+        - Key: environment
+          Value:  !Ref environment 
+
+# Default SecurityGroupIngress
+
+  DefaultSecurityingress:
+    Type: AWS::EC2::SecurityGroupIngress
+    DependsOn: DefaultSecurityGroup
+    Properties:
+      GroupId:
+        Ref: DefaultSecurityGroup
+      IpProtocol: -1
+      FromPort: '0'
+      ToPort: '65535'
+      SourceSecurityGroupId: !Ref DefaultSecurityGroup
+
+
+# Launch Template 
+
+  testLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties: 
+      LaunchTemplateData: 
+        IamInstanceProfile: 
+          Arn: !GetAtt IAMinstanceProfile.Arn
+        ImageId:  !Ref imageID
+        InstanceType: !Ref instanceTypeParameter
+      # KeyName: String
+      # NetworkInterfaces: 
+        #   NetworkInterface
+        MetadataOptions: 
+          HttpTokens: required
+        Monitoring: 
+           Enabled: true
+        SecurityGroupIds: 
+          - !GetAtt DefaultSecurityGroup.GroupId
+        TagSpecifications:
+          - ResourceType: instance
+            Tags: 
+              - Key: Name
+                Value: Dev
+      TagSpecifications:
+        - ResourceType: launch-template
+          Tags: 
+            - Key: Name
+              Value: Dev
+
+# Launch  ec2 instance  
+          
+  testEC2Instance:
+    Type: AWS::EC2::Instance
+    DependsOn:
+        -   testLaunchTemplate
+    Properties:
+        LaunchTemplate:
+            LaunchTemplateId: !Ref testLaunchTemplate
+            Version: !GetAtt testLaunchTemplate.DefaultVersionNumber
+        SubnetId: !Ref subnetID
+
+
+Outputs:
+
+  testEC2InstanceID:
+    Description: Created Instance ID
+    Value: !Ref testEC2Instance
+    Export:
+      Name: testEC2InstanceIDE
+  
+  testLaunchTemplateID:
+    Description: Created Launch Template  ID
+    Value: !Ref testLaunchTemplate
+    Export:
+      Name: testLaunchTemplateIDE
+
+  DefaultSecurityGroupID:
+    Description: SecurityGroup ID
+    Value: !Ref DefaultSecurityGroup
+    Export:
+      Name: DefaultSecurityGroupIDE
+  
+  IAMSSMRoleID:
+    Description: Created Role ID
+    Value: !Ref IAMSSMRole
+    Export:
+      Name: IAMSSMRoleIDE
