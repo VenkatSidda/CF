@@ -1,0 +1,198 @@
+
+Desiner
+Cloud formation
+indentation
+
+
+Cloud Formation: 
+      Template	Designer
+      Own Code
+
+AwsTemplateFormation:
+Description:
+Resources
+	<Name-any>
+		type:
+		properties:
+			imageid:
+                        instancetype:
+
+
+RESOURCE TYPE: <SERVICE-PROVIDER>::<SERVICE-NAME>::<DATA-TYPE-NAME>
+
+total 10 sections
+
+Output: to the crates resources properties
+   <Name-any><property-name>
+
+parameters: 
+conditions:
+ dev: 1c prod: 8c uat:2c this conditions depends on the parameters
+metadata:
+transform: SAM(Servless Application Model) Temaplates 
+rule: parameter rules mentioned here ex: mobile no should be 10 digits
+mapping: ami is differnet for region 
+
+
+Cloudformation: it used to create the complete aws environment which conssit of different resources and diff services with help of template
+
+Template: Template is nothing but as collection of all resources which we want to create . it contain all  attribures 
+
+When we feed this template to cloud formation engine all the resources get created . collection of all this resources called Stack
+
+Once stack is deleted all resorces are created part of that stack is deleted
+
+
+"AWSTemplateFormatVersion": "2010-09-09"
+"Description": ""
+"Parameters": {
+"Mappings": {
+"Resorces": {
+"Outputs": {
+}
+
+
+status of cloudformation 
+error handling
+
+create change set
+
+
+
+Ref: Cloudformation directly went to parameters and search for that parameters
+Fn:Join => joine 2 things
+
+
+How to meticate the drift changes:
+###################################
+
+  That we can do in 2 ways
+       1) Delete the changes 
+       2) Update stack template 
+
+ActionS:
+  modify
+  add
+  delete
+
+Replacements:
+   true ( Means deleteing existing one and creat new onw)
+   fals
+Cloud
+Stack Policy:
+#################
+ When we want to update/modify/delete particular on particular resource then we use "Stack Policy"
+  * Stack policy can be updated at the time of creation of stack or when did some chnages in stack.
+   If stack doesn't have any changes the stack policy can't be allowed to apply	
+
+cfn init signal
+
+CloudFormation has determined that to apply the updates.it needed to create a new ec2 instance and terminate the older one
+
+CloudFormation Update Behaviour:
+###############################
+Cloudformation updates resources based on differents b/w what you submit and stack's current template
+Which method to use depends on which property you update for a resource
+3 kind of changes that can happen in cloud formation
+  Update with No Interruption: (without disrupting resources "Operation & without changing physical ID")
+             Ex: Updating the IAM instance profile of an EC2 Instance
+  Update with some Interruption: (Updating an EC2 instance type from t2.micro to t2.large)
+  Replacement: Recreating the resource with new physical ID
+
+
+stack state:
+##############
+  New:
+     user initiated
+     Create In Progress
+     Created Completed
+  Update:
+     Update in progress
+     Update completed
+     Update completed cleanup in progress
+     Delete in progress
+     Delete Completed
+     Delete Failed
+
+
+# We can't delete non-empty s3 bucket
+# To delete a non-empty S3 bucket, you must delete all the objects inside it first
+
+     
+  
+
+Understanding the CloudFormation Template Options:
+#################################################
+  parameters
+  Tags
+  Permissions
+  Notification Options
+  Timeout (How long you should wait before stack creation times out )
+  Rollback on Failure (Specifies whether the stack should be rolled back if stack creation fails)
+  Rollback configuration (Monitoring time & CloudWatch Alarm)
+  Stack Policy
+  Termination Protection (Prevent the stack being accindentlly deelted)
+  Quick-Start Link
+ 
+
+
+CloudFormation Building Block:
+##############################
+
+  Template's components(one course section for each 4-10)
+  1.AWSTemplateFormatVersion: Identifies the capabilities of the template(2010-09-09)
+  2.Description: Comments about the template
+  3.Transform: Specifies one or more Macros that used to process the template
+  4.Metadata
+  5.Resources: your AWS resources declared in the template (MANDATORY)
+  6.Parameters: The dynamic inputs for your template
+  7.Mappings: The static variables for your template
+  8.Output: References to what has been created
+  9.Conditionals: List of conditions to perform resource creation
+  10.Rules: Valiadate  a parameters(s) during stack creation/update
+
+Template's helpers (learning as we encounter them)
+  1.Reference (it is used to understand how to link these logical resources together)
+  2.Functions: to transform some inputs
+
+Parameters: Parameters are a way to provide inputs to your AWS CloudFormation Template
+            Parametes can be cross-validated using "Rules"
+Parameters Settings:
+            Parameters can be controlled by all these settings
+             # type:
+                   string
+                   number
+                   commaDelimitedList
+                   list<Number>
+                   AWS-Specific parameters(to help catch invalid values - match against existing values in the AWS Account)
+                   List<AWS-Specific parameters>
+                   SSM Parameter (get parameter  value from SSM Parameter store)
+ 	     # Description
+             # ConstrainDescription (String)
+             # Min/Max Length
+             # Min/Max Value
+             # Default
+             # AllowedValues (array)
+             # NoEcho (Boolean)
+
+How to Refernace a parameters
+##############################
+      * the "Fn:Ref" Function can be leveraged to reference parameters 
+      * parameters can be used anywhere in a template except:
+           * AWSTemplateFormatVersion
+           * Description
+           * Tranform
+           * mappings 
+      * The shorthand for this in YAML is !Ref
+
+
+Resources:
+###########
+ * Resources are the core of your cloudFormation template
+ * They represent the different aws componenets that will be created and configured
+ * Resources are declared and can reference each other
+ * AWS figures out creation, updates and deletes of resources for us
+ * There are over 700 types of resources
+ 
+  Resources types identifiers are of the form:
+            AWS::<aws-product-name>::<data-type-name> 
